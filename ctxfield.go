@@ -71,7 +71,7 @@ func (r *runner) ctxInField(o types.Object) bool {
 		return false
 	}
 
-	for _, pkg := range append(v.Pkg().Imports(), v.Pkg()) {
+	for _, pkg := range v.Pkg().Imports() {
 		for _, i := range analysisutil.Interfaces(pkg) {
 			if types.Implements(st, i) {
 				return false
