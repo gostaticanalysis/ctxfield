@@ -1,6 +1,7 @@
 package a
 
 import (
+	_ "b" // import for b.Empty
 	"context"
 	"fmt"
 )
@@ -42,3 +43,10 @@ type T7 struct {
 var _ fmt.Stringer = (*T7)(nil)
 
 func (*T7) String() string { return "" }
+
+type T8 struct {
+	N       *int
+	context *context.Context // want "context.Context must not be in a field"
+}
+
+func (t *T8) M() {}

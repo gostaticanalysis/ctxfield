@@ -68,8 +68,9 @@ func (r *runner) ctxInField(o types.Object) bool {
 
 	for _, pkg := range v.Pkg().Imports() {
 		for _, i := range analysisutil.Interfaces(pkg) {
-			if types.Implements(st, i) ||
-				types.Implements(stptr, i) {
+			if !i.Empty() &&
+				(types.Implements(st, i) ||
+					types.Implements(stptr, i)) {
 				return false
 			}
 		}
