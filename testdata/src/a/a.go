@@ -28,3 +28,17 @@ type T5 struct {
 	I
 	ctx context.Context // want "context.Context must not be in a field"
 }
+
+type T6 struct {
+	ctx context.Context // want "context.Context must not be in a field"
+}
+
+func (*T6) M() {}
+
+type T7 struct {
+	ctx context.Context // OK
+}
+
+var _ fmt.Stringer = (*T7)(nil)
+
+func (*T7) String() string { return "" }

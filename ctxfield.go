@@ -48,21 +48,14 @@ func (r *runner) ctxInField(o types.Object) bool {
 		return false
 	}
 
-	switch t := v.Type().(type) {
-	case *types.Pointer:
-		if !types.Identical(t.Elem(), r.ctx) {
-			return false
-		}
-	default:
-		if !types.Identical(t, r.ctx) {
-			return false
-		}
+	if !r.isCtx(v.Type()) {
+		return false
 	}
 
-	var st *types.Struct
-	for _, s := range analysisutil.Structs(v.Pkg()) {
+	var st types.Type
+	for n, s := range analysisutil.Structs(v.Pkg()) {
 		if analysisutil.HasField(s, v) {
-			st = s
+			st = v.Pkg().Scope().Lookup(n).Type()
 			break
 		}
 	}
@@ -71,13 +64,31 @@ func (r *runner) ctxInField(o types.Object) bool {
 		return false
 	}
 
+	stptr := types.NewPointer(st)
+
 	for _, pkg := range v.Pkg().Imports() {
 		for _, i := range analysisutil.Interfaces(pkg) {
-			if types.Implements(st, i) {
+			if types.Implements(st, i) ||
+				types.Implements(stptr, i) {
 				return false
 			}
 		}
 	}
 
 	return true
+}
+
+func (r *runner) isCtx(t types.Type) bool {
+	if types.Identical(t, r.ctx) {
+		return true
+	}
+
+	switch t := t.(type) {
+	case *types.Pointer:
+		return r.isCtx(t.Elem())
+	case *types.Named:
+		return r.isCtx(t.Underlying())
+	}
+
+	return false
 }
