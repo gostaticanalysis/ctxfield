@@ -44,12 +44,19 @@ func (r *runner) ctxInField(o types.Object) bool {
 	}
 
 	v, isVar := o.(*types.Var)
-	if !isVar || !v.IsField() {
+	if !isVar || !v.IsField() || v.Anonymous() {
 		return false
 	}
 
-	if !types.Identical(v.Type(), r.ctx) {
-		return false
+	switch t := v.Type().(type) {
+	case *types.Pointer:
+		if !types.Identical(t.Elem(), r.ctx) {
+			return false
+		}
+	default:
+		if !types.Identical(t, r.ctx) {
+			return false
+		}
 	}
 
 	var st *types.Struct
